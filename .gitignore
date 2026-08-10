@@ -1,0 +1,17 @@
+node_modules/
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example
+
+.azure-session/
+*.log
+deploy-package.zip
+
+backend/local.settings.json
+backend/node_modules/
+
+.vscode/
+.idea/
+coverage/

@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Next Chapter brings daily tasks, reading, medication reminders, and personal growth into one calm life admin companion."
+    />
+    <meta name="theme-color" content="#17382f" />
+    <title>Next Chapter — Life admin, made lighter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to today’s quests</a>
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <a class="brand" id="home-link" href="#today" aria-label="Go to Today">
+        <span class="brand-mark" aria-hidden="true">N<span>C</span></span>
+        <span class="brand-copy">
+          <strong>Next Chapter</strong>
+          <small>Life, in good order</small>
+        </span>
+      </a>
+      <nav class="main-nav" aria-label="Primary navigation">
+        <button class="nav-link active" data-view="today"><span aria-hidden="true">⌂</span>Today</button>
+        <button class="nav-link" data-view="todos"><span aria-hidden="true">✓</span>To-dos</button>
+        <button class="nav-link" data-view="library"><span aria-hidden="true">▤</span>Books</button>
+        <button class="nav-link" data-view="meds"><span aria-hidden="true">✚</span>Meds</button>
+        <button class="nav-link" data-view="weight"><span aria-hidden="true">◒</span>Weight</button>
+        <button class="nav-link" data-view="growth"><span aria-hidden="true">↗</span>Growth</button>
+      </nav>
+      <div class="header-actions">
+        <button class="streak-pill" id="streak-button" type="button" title="View the quests for today and keep your streak going">
+          <span class="flame-icon" aria-hidden="true">◆</span>
+          <strong id="streak-count">0</strong>
+          <span>day streak</span>
+        </button>
+        <button class="avatar-button" id="profile-button" aria-label="Open profile settings">
+          <span id="avatar-initials">ME</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <section class="view active" id="today-view" aria-labelledby="today-title">
+        <div class="hero-grid">
+          <div class="hero-copy reveal">
+            <p class="eyebrow" id="today-date">TODAY</p>
+            <h1 id="today-title">Keep the moving parts<br /><em>moving.</em></h1>
+            <p class="hero-intro" id="hero-intro">
+              Tasks, health, reading and growth — one calm view of what matters today.
+            </p>
+          </div>
+
+          <aside class="level-card reveal delay-1" aria-label="Current level progress">
+            <div class="level-card-top">
+              <div>
+                <span class="micro-label">YOUR CURRENT LEVEL</span>
+                <h2><span id="level-number">01</span> <small id="level-title">The Starter</small></h2>
+              </div>
+              <div class="level-emblem" aria-hidden="true">
+                <svg viewBox="0 0 100 100">
+                  <circle class="ring-track" cx="50" cy="50" r="43"></circle>
+                  <circle class="ring-progress" id="xp-ring" cx="50" cy="50" r="43"></circle>
+                </svg>
+                <span id="ring-level">1</span>
+              </div>
+            </div>
+            <div class="xp-copy">
+              <span><strong id="current-xp">0</strong> XP</span>
+              <span><span id="xp-to-next">180</span> XP to Level 2</span>
+            </div>
+            <div class="xp-track" aria-hidden="true">
+              <span id="xp-progress"></span>
+            </div>
+            <p class="next-unlock">
+              <span aria-hidden="true">◇</span>
+              Next unlock: <strong id="next-unlock">Career compass</strong>
+            </p>
+          </aside>
+        </div>
+
+        <section class="coach-card reveal delay-2" aria-labelledby="coach-title">
+          <div class="coach-seal" aria-hidden="true">
+            <span>NC</span>
+          </div>
+          <div class="coach-copy">
+            <p class="micro-label">START HERE</p>
+            <h2 id="coach-title">What needs your attention today?</h2>
+            <p id="coach-note">
+              Your daily list is the quickest way to make this page useful.
+            </p>
+          </div>
+          <button class="text-action" id="cue-action">
+            Open today’s list
+            <span aria-hidden="true">↗</span>
+          </button>
+        </section>
+
+        <section class="life-snapshot reveal delay-2" aria-labelledby="snapshot-title">
+          <div class="snapshot-heading">
+            <p class="eyebrow">YOUR SHORTCUTS</p>
+            <h2 id="snapshot-title">The things worth checking now.</h2>
+          </div>
+          <button class="snapshot-card snapshot-todos" data-go-view="todos">
+            <span class="snapshot-icon" aria-hidden="true">✓</span>
+            <span><strong id="snapshot-todo-count">0 tasks</strong><small id="snapshot-todo-note">A clear day</small></span>
+            <i aria-hidden="true">→</i>
+          </button>
+          <button class="snapshot-card snapshot-meds" data-go-view="meds">
+            <span class="snapshot-icon" aria-hidden="true">✚</span>
+            <span><strong id="snapshot-med-count">No meds due</strong><small id="snapshot-med-note">Nothing needs attention</small></span>
+            <i aria-hidden="true">→</i>
+          </button>
+          <button class="snapshot-card snapshot-books" data-go-view="library">
+            <span class="snapshot-icon" aria-hidden="true">▤</span>
+            <span><strong id="snapshot-book-count">No active books</strong><small id="snapshot-book-note">Start a new chapter</small></span>
+            <i aria-hidden="true">→</i>
+          </button>
+          <button class="snapshot-card snapshot-weight" data-go-view="weight">
+            <span class="snapshot-icon" aria-hidden="true">◒</span>
+            <span><strong id="snapshot-weight-count">Body snapshot</strong><small id="snapshot-weight-note">Add your first measurement</small></span>
+            <i aria-hidden="true">→</i>
+          </button>
+        </section>
+
+        <div class="content-grid">
+          <section class="quest-section reveal delay-3" aria-labelledby="quest-heading">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">TODAY’S PRACTICE</p>
+                <h2 id="quest-heading">Your daily quests</h2>
+              </div>
+              <div class="quest-summary">
+                <strong id="quest-completed">0</strong>/<span id="quest-total">4</span> complete
+              </div>
+            </div>
+            <div class="quest-list" id="quest-list" aria-live="polite"></div>
+            <button class="add-quest-button" id="add-quest">
+              <span aria-hidden="true">＋</span>
+              Add a stretch quest
+            </button>
+          </section>
+
+          <aside class="side-column">
+            <section class="focus-card reveal delay-3" aria-labelledby="focus-heading">
+              <div class="section-heading compact">
+                <div>
+                  <p class="eyebrow">YOUR EDGE</p>
+                  <h2 id="focus-heading">Capability growth</h2>
+                </div>
+                <button class="icon-button" id="focus-info" aria-label="About capability growth">?</button>
+              </div>
+              <div class="capability-list" id="capability-list"></div>
+            </section>
+
+            <section class="weekly-card reveal delay-4" aria-labelledby="week-heading">
+              <div class="week-top">
+                <div>
+                  <p class="eyebrow">THIS WEEK</p>
+                  <h2 id="week-heading"><span id="weekly-xp">0</span> XP earned</h2>
+                </div>
+                <span class="week-badge" id="week-badge">Begin</span>
+              </div>
+              <div class="week-days" id="week-days"></div>
+              <p id="weekly-message">Your first completed quest starts the rhythm.</p>
+            </section>
+          </aside>
+        </div>
+
+        <section class="reflection-card reveal delay-4" aria-labelledby="reflection-heading">
+          <div>
+            <p class="eyebrow">CLOSE THE LOOP</p>
+            <h2 id="reflection-heading">What would make today feel meaningful?</h2>
+            <p>Write one sentence. Clarity is part of the practice.</p>
+          </div>
+          <form id="reflection-form">
+            <label class="sr-only" for="reflection-input">Today’s reflection</label>
+            <textarea
+              id="reflection-input"
+              rows="2"
+              maxlength="240"
+              placeholder="By the end of today, I will be proud that I…"
+            ></textarea>
+            <button type="submit" class="primary-button">Save reflection <span aria-hidden="true">→</span></button>
+          </form>
+        </section>
+      </section>
+
+      <section class="view secondary-view life-admin-view" id="todos-view" aria-labelledby="todos-title">
+        <div class="page-intro life-page-intro">
+          <p class="eyebrow">DAILY TO-DO</p>
+          <h1 id="todos-title">A lighter head,<br /><em>one tick at a time.</em></h1>
+          <p>Each day gets a fresh page. Tick things off, or move through the day at your own pace.</p>
+        </div>
+        <div class="todo-layout">
+          <section class="admin-panel todo-panel">
+            <div class="todo-date-bar">
+              <button class="date-step" id="todo-previous" aria-label="Previous day">←</button>
+              <label><span class="micro-label">SHOWING</span><input type="date" id="todo-date" /></label>
+              <button class="date-step" id="todo-next" aria-label="Next day">→</button>
+            </div>
+            <form class="quick-add" id="todo-form">
+              <label class="sr-only" for="todo-input">Add a task</label>
+              <input id="todo-input" maxlength="120" placeholder="What needs doing?" autocomplete="off" />
+              <div class="todo-detail-fields">
+                <label><span>Priority</span><select id="todo-priority"><option value="normal">Normal</option><option value="high">High</option><option value="low">Low</option></select></label>
+                <label><span>Category</span><select id="todo-category"><option value="personal">Personal</option><option value="work">Work</option><option value="home">Home</option><option value="health">Health</option><option value="errands">Errands</option></select></label>
+                <label><span>Time <i>(optional)</i></span><input id="todo-time" type="time" /></label>
+                <label><span>Repeat</span><select id="todo-repeat"><option value="none">Does not repeat</option><option value="daily">Every day</option><option value="weekdays">Weekdays</option><option value="weekly">Every week</option></select></label>
+                <label class="todo-notes-field"><span>Notes <i>(optional)</i></span><input id="todo-notes" maxlength="180" placeholder="A useful detail, link, or next step" /></label>
+              </div>
+              <button class="primary-button todo-add-button" type="submit">Add task <span aria-hidden="true">＋</span></button>
+            </form>
+            <div class="todo-progress" aria-live="polite">
+              <span id="todo-progress-copy">Nothing on the list yet</span>
+              <label class="todo-filter"><span>Show</span><select id="todo-category-filter"><option value="all">Everything</option><option value="personal">Personal</option><option value="work">Work</option><option value="home">Home</option><option value="health">Health</option><option value="errands">Errands</option></select></label>
+              <div><i id="todo-progress-bar"></i></div>
+            </div>
+            <div class="todo-list" id="todo-list"></div>
+            <button class="text-action clear-completed" id="clear-completed">Clear completed</button>
+          </section>
+          <aside class="todo-aside">
+            <section class="reminder-card" aria-labelledby="reminder-title">
+              <span class="reminder-bell" aria-hidden="true">◌</span><p class="eyebrow">MOBILE REMINDERS</p><h2 id="reminder-title">A nudge before it slips.</h2>
+              <p id="reminder-status">Get alerts for timed tasks and medication doses while Next Chapter is open.</p>
+              <label>Remind me<select id="reminder-lead"><option value="5">5 minutes before</option><option value="15">15 minutes before</option><option value="30">30 minutes before</option><option value="60">1 hour before</option><option value="1440">1 day before</option></select></label>
+              <button class="secondary-button" id="enable-reminders" type="button">Enable device reminders</button>
+              <small>On iPhone or iPad, add this app to your Home Screen before enabling push.</small>
+            </section>
+            <section class="day-note"><span aria-hidden="true">“</span><p>You do not need to hold everything in your head for it to matter.</p><small>YOUR DAILY PAGE</small></section>
+          </aside>
+        </div>
+      </section>
+
+      <section class="view secondary-view life-admin-view" id="library-view" aria-labelledby="library-title">
+        <div class="page-intro life-page-intro library-intro">
+          <div>
+            <p class="eyebrow">READING LIFE</p>
+            <h1 id="library-title">Your shelf,<br /><em>in motion.</em></h1>
+            <p>Keep books and audiobooks together, with just enough progress to find your place again.</p>
+          </div>
+          <div class="library-tally" aria-label="Reading summary"><strong id="reading-count">0</strong><span>in progress</span><strong id="finished-count">0</strong><span>finished</span></div>
+        </div>
+        <form class="admin-panel add-book-form" id="book-form">
+          <div class="form-heading"><p class="eyebrow">ADD TO YOUR SHELF</p><h2>What are you reading?</h2></div>
+          <label>Title<input id="book-title" maxlength="100" required placeholder="Book title" /></label>
+          <label>Author / narrator <span>(optional)</span><input id="book-author" maxlength="80" placeholder="Author or narrator" /></label>
+          <label>Format<select id="book-format"><option>Book</option><option>Audiobook</option><option>E-book</option></select></label>
+          <div class="audiobook-fields" id="audiobook-fields" hidden>
+            <label>Current listening position <input id="book-current-time" type="text" maxlength="20" placeholder="e.g. 4h 18m" /></label>
+            <label>Total length <input id="book-total-time" type="text" maxlength="20" placeholder="e.g. 11h 42m" /></label>
+            <p>Save where you paused so your next listen starts effortlessly.</p>
+          </div>
+          <button class="primary-button" type="submit">Add to shelf <span>+10 XP</span></button>
+        </form>
+        <div class="book-shelf" id="book-shelf" aria-live="polite"></div>
+      </section>
+
+      <section class="view secondary-view life-admin-view" id="meds-view" aria-labelledby="meds-title">
+        <div class="page-intro life-page-intro meds-intro">
+          <div>
+            <p class="eyebrow">MEDICATION RHYTHM</p>
+            <h1 id="meds-title">Know what’s due,<br /><em>without guessing.</em></h1>
+            <p>Set the schedule you were given, then log each dose. This tracker follows your instructions; it does not provide medical advice.</p>
+          </div>
+          <div class="next-dose-orb" id="next-dose-orb"><span>NEXT UP</span><strong id="next-dose-name">Nothing scheduled</strong><small id="next-dose-time">Add a medication below</small></div>
+        </div>
+        <div class="med-layout">
+          <section class="med-list" id="med-list" aria-live="polite"></section>
+          <form class="admin-panel med-form" id="med-form">
+            <div class="form-heading"><p class="eyebrow" id="med-form-mode">ADD A MEDICATION</p><h2 id="med-form-title">Set your rhythm</h2></div>
+            <p class="form-hint med-form-status" id="med-form-status" role="status" aria-live="polite"></p>
+            <label>Name<input id="med-name" maxlength="80" required placeholder="e.g. Peps" /></label>
+            <label>Schedule
+              <select id="med-schedule-type">
+                <option value="interval">Every set number of hours or days</option>
+                <option value="weekly">Specific days each week</option>
+                <option value="cycle">Days on, then days off</option>
+              </select>
+            </label>
+            <fieldset class="timing-fields" id="med-interval-fields"><legend>Timing between doses</legend><div class="schedule-fields"><label>Repeat every<input id="med-interval" type="number" min="1" max="365" value="3" required /></label><label>Time unit<select id="med-unit"><option value="days">days</option><option value="hours">hours</option></select></label></div><p>For example: every 8 hours. This is not the amount you take.</p></fieldset>
+            <div class="weekly-schedule" id="med-weekly-fields" hidden>
+              <fieldset>
+                <legend>Days of the week</legend>
+                <div class="weekday-picker">
+                  <label><input type="checkbox" name="med-weekday" value="1" /><span>Mon</span></label>
+                  <label><input type="checkbox" name="med-weekday" value="2" /><span>Tue</span></label>
+                  <label><input type="checkbox" name="med-weekday" value="3" /><span>Wed</span></label>
+                  <label><input type="checkbox" name="med-weekday" value="4" /><span>Thu</span></label>
+                  <label><input type="checkbox" name="med-weekday" value="5" /><span>Fri</span></label>
+                  <label><input type="checkbox" name="med-weekday" value="6" /><span>Sat</span></label>
+                  <label><input type="checkbox" name="med-weekday" value="0" /><span>Sun</span></label>
+                </div>
+              </fieldset>
+              <label>Time<input id="med-schedule-time" type="time" value="09:00" /></label>
+            </div>
+            <div class="cycle-schedule" id="med-cycle-fields" hidden>
+              <label>Days on<input id="med-cycle-on-days" type="number" min="1" max="365" step="1" value="5" /></label>
+              <label>Days off<input id="med-cycle-off-days" type="number" min="0" max="365" step="1" value="2" /></label>
+              <label>Time<input id="med-cycle-time" type="time" value="09:00" /></label>
+            </div>
+            <fieldset class="course-fields"><legend>Course timing <span>(leave duration empty for ongoing)</span></legend><div class="schedule-fields"><label for="med-course-start">Course start<input id="med-course-start" type="date" /></label><label for="med-duration">Duration<input id="med-duration" type="number" min="1" step="1" value="4" /></label><label for="med-duration-unit">Duration unit<select id="med-duration-unit"><option value="weeks">weeks</option><option value="days">days</option></select></label></div><p class="course-end">Course end <output id="med-course-end" aria-live="polite">Ongoing</output></p></fieldset>
+            <fieldset class="dose-fields"><legend>Amount in each dose <span>(optional)</span></legend><label>Amount<input id="med-dosage" type="number" min="0.01" step="any" placeholder="e.g. 20" /></label><label>Medicine unit<select id="med-dose-unit"><option value="mg">mg</option><option value="mcg">mcg</option><option value="IU">IU</option><option value="g">g</option><option value="mL">mL</option><option value="tablet">tablet(s)</option><option value="capsule">capsule(s)</option><option value="drop">drop(s)</option><option value="puff">puff(s)</option><option value="unit">unit(s)</option></select></label></fieldset>
+            <label>Last taken <span>(optional)</span><input id="med-last-taken" type="datetime-local" /></label>
+            <p class="form-hint">Use the timing provided by your clinician or medication label.</p>
+            <div class="med-form-actions"><button class="primary-button" id="med-form-submit" type="submit">Add medication <span>+10 XP</span></button><button class="secondary-button" id="cancel-med-edit" type="button" hidden>Cancel edit</button></div>
+          </form>
+        </div>
+      </section>
+
+      <section class="view secondary-view life-admin-view weight-view" id="weight-view" aria-labelledby="weight-title">
+        <div class="page-intro life-page-intro weight-intro">
+          <div>
+            <p class="eyebrow">BODY MEASUREMENTS</p>
+            <h1 id="weight-title">Notice the pattern,<br /><em>at your pace.</em></h1>
+            <p>Keep dated weight and optional waist measurements in one private, on-device record.</p>
+          </div>
+        </div>
+
+        <div class="weight-layout">
+          <form class="admin-panel weight-form" id="weight-form" novalidate>
+            <div class="form-heading"><p class="eyebrow">ADD A MEASUREMENT</p><h2>Today’s record</h2></div>
+            <label for="weight-date">Date<input id="weight-date" type="date" required /></label>
+            <label for="weight-value">Weight <span>(kg; decimals supported)</span><input id="weight-value" type="number" min="20" max="500" step="0.1" inputmode="decimal" required placeholder="e.g. 74.2" /></label>
+            <fieldset class="waist-field">
+              <legend>Waist <span id="waist-unit-copy">(cm, optional)</span></legend>
+              <div class="measurement-input-row">
+                <label class="sr-only" for="waist-value">Waist measurement</label>
+                <input id="waist-value" type="number" min="30" max="300" step="0.1" inputmode="decimal" placeholder="e.g. 82.5" aria-describedby="waist-input-help" />
+                <label class="sr-only" for="waist-unit">Waist unit</label>
+                <select id="waist-unit" aria-label="Waist unit"><option value="cm">cm</option><option value="in">inches</option></select>
+              </div>
+              <small id="waist-input-help">Optional waist measurement in centimetres.</small>
+            </fieldset>
+            <label for="weight-note">Note <span>(optional)</span><textarea id="weight-note" rows="3" maxlength="240" placeholder="A brief context for this measurement"></textarea></label>
+            <p class="form-hint">Saving the same date updates that day’s measurement. Measurements do not affect your XP.</p>
+            <p class="weight-form-status" id="weight-form-status" role="status" aria-live="polite"></p>
+            <button class="primary-button" type="submit">Save measurement <span aria-hidden="true">→</span></button>
+          </form>
+
+          <div class="weight-main">
+            <section class="weight-summary" aria-label="Measurement summary">
+              <article><span>Latest weight</span><strong id="weight-latest">—</strong><small id="weight-latest-date">No measurements yet</small></article>
+              <article><span>Selected period</span><strong id="weight-change">—</strong><small id="weight-change-note">Add two entries to compare</small></article>
+              <article><span>Latest waist</span><strong id="waist-latest">—</strong><small id="waist-change-note">Optional measurement</small></article>
+            </section>
+            <section class="weight-chart-card" aria-labelledby="weight-chart-heading">
+              <div class="weight-chart-heading">
+                <div><p class="eyebrow">THE LONG VIEW</p><h2 id="weight-chart-heading">Measurements, in context.</h2></div>
+                <div class="weight-range-controls" aria-label="Chart time period">
+                  <button type="button" class="weight-range" data-weight-range="30d" aria-pressed="false">30D</button>
+                  <button type="button" class="weight-range" data-weight-range="3m" aria-pressed="true">3M</button>
+                  <button type="button" class="weight-range" data-weight-range="6m" aria-pressed="false">6M</button>
+                  <button type="button" class="weight-range" data-weight-range="1y" aria-pressed="false">1Y</button>
+                  <button type="button" class="weight-range" data-weight-range="all" aria-pressed="false">ALL</button>
+                </div>
+              </div>
+              <div id="weight-chart" class="weight-chart"></div>
+              <p id="weight-chart-detail" class="weight-chart-detail" aria-live="polite">Add measurements to see the chart.</p>
+            </section>
+            <section class="weight-history" aria-labelledby="weight-history-heading">
+              <div class="section-heading compact"><div><p class="eyebrow">RECENT RECORDS</p><h2 id="weight-history-heading">Measurement history</h2></div><span id="weight-history-count" class="weight-history-count">0 entries</span></div>
+              <div id="weight-history-list" class="weight-history-list" aria-live="polite"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section class="view secondary-view" id="growth-view" aria-labelledby="journey-title">
+        <div class="page-intro">
+          <p class="eyebrow">THE LONG VIEW</p>
+          <h1 id="journey-title">Your executive journey.</h1>
+          <p>Every level represents a more capable, visible, and intentional version of you.</p>
+        </div>
+        <div class="journey-map" id="journey-map"></div>
+        <div class="page-intro growth-insights-intro">
+          <p class="eyebrow">EVIDENCE OF GROWTH</p>
+          <h1>Your momentum, made visible.</h1>
+          <p>Progress is more persuasive when you can see the pattern.</p>
+        </div>
+        <div class="insight-grid" id="insight-grid"></div>
+      </section>
+    </main>
+
+    <dialog class="profile-dialog" id="profile-dialog">
+      <form method="dialog" class="dialog-shell" id="profile-form">
+        <button class="dialog-close" value="cancel" aria-label="Close profile settings">×</button>
+        <p class="eyebrow">PERSONALISE YOUR PATH</p>
+        <h2>Make this journey yours.</h2>
+        <p class="dialog-intro">A little context helps your prompts feel more relevant.</p>
+        <label>
+          Your name
+          <input id="profile-name" name="name" maxlength="40" autocomplete="name" placeholder="What should we call you?" />
+        </label>
+        <label>
+          The role you’re moving toward
+          <input id="target-role" name="targetRole" maxlength="80" placeholder="e.g. Chief Operating Officer" />
+        </label>
+        <fieldset>
+          <legend>Where do you want the biggest lift?</legend>
+          <div class="focus-options">
+            <label><input type="radio" name="focus" value="presence" /> Executive presence</label>
+            <label><input type="radio" name="focus" value="speaking" /> Public speaking</label>
+            <label><input type="radio" name="focus" value="momentum" /> Search momentum</label>
+          </div>
+        </fieldset>
+        <menu>
+          <button value="cancel" class="secondary-button">Not now</button>
+          <button value="default" class="primary-button" id="save-profile">Save my path</button>
+        </menu>
+        <button type="button" class="reset-button" id="reset-progress">Reset all progress</button>
+      </form>
+    </dialog>
+
+    <dialog class="info-dialog" id="info-dialog">
+      <div class="dialog-shell small">
+        <button class="dialog-close" id="close-info" aria-label="Close">×</button>
+        <p class="eyebrow">HOW IT WORKS</p>
+        <h2>Actions become evidence.</h2>
+        <p>
+          Quests add XP to the capability they exercise. The percentages show the balance of your
+          practice, not a judgement of your ability. Complete a mix of quests to build a rounded
+          executive profile.
+        </p>
+      </div>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite">
+      <span class="toast-mark" aria-hidden="true">✓</span>
+      <div>
+        <strong id="toast-title">Quest complete</strong>
+        <span id="toast-message">XP added to your journey.</span>
+      </div>
+    </div>
+
+    <div class="level-up" id="level-up" aria-hidden="true">
+      <div class="level-up-content">
+        <p>LEVEL UP</p>
+        <strong id="level-up-number">2</strong>
+        <h2 id="level-up-title">The Navigator</h2>
+        <span id="level-up-reward">Career compass unlocked</span>
+      </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

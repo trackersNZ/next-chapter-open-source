@@ -1,0 +1,17 @@
+{
+  "name": "Next Chapter",
+  "short_name": "Next Chapter",
+  "description": "Life admin, medication rhythms, reading, and growth in one calm companion.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f5f0e5",
+  "theme_color": "#17382f",
+  "icons": [
+    {
+      "sizes": "any",
+      "src": "./icon.svg",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
