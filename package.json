@@ -15,7 +15,7 @@
   "type": "module",
   "scripts": {
     "dev": "node scripts/serve.mjs",
-    "test": "node --test --test-isolation=none",
+    "test": "node --test",
     "check": "node --check app.js && node --check weight-tracker.js && node --check service-worker.js && node --check backend/src/index.js && node --check backend/src/reminders.js && node --check scripts/serve.mjs && npm test"
   },
   "engines": {
