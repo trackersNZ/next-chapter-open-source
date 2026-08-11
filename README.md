@@ -6,6 +6,7 @@ Next Chapter is a local-first personal progress companion. It turns goals and ev
 
 - daily and one-off tasks;
 - career-development quests and reflections;
+- medieval-fantasy level coffers, collectible relics, and an outfit-able character;
 - a reading and audiobook shelf;
 - configurable medication schedules and dose logging;
 - weight and optional waist-measurement history;

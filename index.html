@@ -17,6 +17,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="armory.css" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to today’s quests</a>
@@ -44,6 +45,10 @@
           <span class="flame-icon" aria-hidden="true">◆</span>
           <strong id="streak-count">0</strong>
           <span>day streak</span>
+        </button>
+        <button class="armory-button" id="armory-button" type="button" aria-label="Open your armory">
+          <span class="armory-button-shield" aria-hidden="true">♜</span>
+          <span class="loot-badge" id="loot-badge" hidden>0</span>
         </button>
         <button class="avatar-button" id="profile-button" aria-label="Open profile settings">
           <span id="avatar-initials">ME</span>
@@ -377,6 +382,64 @@
         </div>
       </section>
 
+      <section class="view secondary-view armory-view" id="armory-view" aria-labelledby="armory-title">
+        <header class="armory-banner reveal">
+          <div>
+            <p class="eyebrow">THE WAYFARER’S ARMORY</p>
+            <h1 id="armory-title">Wear the proof<br /><em>of the journey.</em></h1>
+            <p>Every new level earns one sealed coffer. Open it, discover a relic, and outfit your travelling character.</p>
+          </div>
+          <div class="drop-odds" aria-label="Loot rarity chances">
+            <span><i class="rarity-dot common"></i>Common <strong>60%</strong></span>
+            <span><i class="rarity-dot uncommon"></i>Uncommon <strong>25%</strong></span>
+            <span><i class="rarity-dot rare"></i>Rare <strong>10%</strong></span>
+            <span><i class="rarity-dot epic"></i>Epic <strong>4%</strong></span>
+            <span><i class="rarity-dot legendary"></i>Legendary <strong>1%</strong></span>
+          </div>
+        </header>
+
+        <div class="armory-grid">
+          <section class="character-scroll reveal delay-1" aria-labelledby="character-name">
+            <div class="character-heading">
+              <div><p class="micro-label">YOUR ADVENTURER</p><h2 id="character-name">The Wayfarer</h2></div>
+              <span class="gear-score"><strong id="gear-score">0</strong> renown</span>
+            </div>
+            <p class="character-title" id="character-title">Level 1 · The Starter</p>
+            <div class="character-sheet" id="character-sheet" aria-label="Character outfit">
+              <div class="character-runes" aria-hidden="true">✦ · ✧ · ✦</div>
+              <div class="paper-doll" aria-hidden="true">
+                <span class="doll-aura"></span>
+                <span class="paper-doll-piece doll-cloak" data-character-piece="cloak">≋</span>
+                <span class="paper-doll-piece doll-head" data-character-piece="head">◇</span>
+                <span class="paper-doll-piece doll-body" data-character-piece="body">◇</span>
+                <span class="paper-doll-piece doll-weapon" data-character-piece="weapon">†</span>
+                <span class="paper-doll-piece doll-offhand" data-character-piece="offhand">◐</span>
+                <span class="paper-doll-piece doll-boots" data-character-piece="boots">⌁</span>
+              </div>
+            </div>
+            <div class="equipped-slots" id="equipped-slots"></div>
+          </section>
+
+          <section class="chest-room reveal delay-2" aria-labelledby="coffer-title">
+            <div class="coffer-count"><span id="coffer-count">0</span><small>sealed coffers</small></div>
+            <div><p class="micro-label">LEVEL REWARD</p><h2 id="coffer-title">The level coffer</h2><p>Most hold honest travelling gear. A few contain objects sung about in old halls.</p></div>
+            <button class="coffer-button" id="open-coffer" type="button">
+              <span class="coffer-visual" aria-hidden="true"><i class="coffer-lid"></i><i class="coffer-body"></i><i class="coffer-lock">◆</i></span>
+              <span class="coffer-action"><strong>Open one coffer</strong><small>Reveal a random relic</small></span>
+            </button>
+            <div class="loot-reveal" id="loot-reveal" aria-live="polite">
+              <span class="loot-reveal-glyph" id="loot-reveal-glyph" aria-hidden="true">✦</span>
+              <div><small id="loot-reveal-rarity">THE VAULT IS QUIET</small><strong id="loot-reveal-name">Your next relic waits here.</strong><span id="loot-reveal-slot">Earn a level to receive a coffer.</span></div>
+            </div>
+          </section>
+        </div>
+
+        <section class="inventory-vault reveal delay-3" aria-labelledby="inventory-title">
+          <div class="inventory-heading"><div><p class="eyebrow">RELIC LEDGER</p><h2 id="inventory-title">Your collected gear</h2></div><span id="inventory-count">0 relics</span></div>
+          <div class="loot-inventory" id="loot-inventory"></div>
+        </section>
+      </section>
+
       <section class="view secondary-view" id="growth-view" aria-labelledby="journey-title">
         <div class="page-intro">
           <p class="eyebrow">THE LONG VIEW</p>
@@ -449,7 +512,9 @@
         <p>LEVEL UP</p>
         <strong id="level-up-number">2</strong>
         <h2 id="level-up-title">The Navigator</h2>
-        <span id="level-up-reward">Career compass unlocked</span>
+        <span class="level-up-reward" id="level-up-reward">Career compass unlocked</span>
+        <div class="level-up-coffer" aria-hidden="true"><i></i><b>◆</b></div>
+        <span class="level-up-loot" id="level-up-loot">A sealed coffer was sent to your armory.</span>
       </div>
     </div>
 
