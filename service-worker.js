@@ -1,5 +1,5 @@
-const CACHE_NAME = "next-chapter-shell-v3";
-const APP_SHELL = ["./", "./index.html", "./styles.css", "./app.js", "./weight-tracker.js", "./manifest.webmanifest", "./push-config.json"];
+const CACHE_NAME = "next-chapter-shell-v4";
+const APP_SHELL = ["./", "./index.html", "./styles.css", "./armory.css", "./app.js", "./loot-system.js", "./medication-schedule.js", "./weight-tracker.js", "./manifest.webmanifest", "./push-config.json"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));

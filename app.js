@@ -1,5 +1,6 @@
 import { boundedNotificationTime, concreteMedicationReminderId, finiteIntervalOccurrences, finiteIntervalReminderOccurrences, inclusiveCourseEndDate, medicationDoseLabel, medicationOccurrences, medicationScheduleLabel, medicationWasTakenRecently, nextIntervalOccurrence, weeklyOccurrences, weeklyScheduleLabel } from "./medication-schedule.js";
 import { buildWeightChartGeometry, calculateWeightSummary, convertWaistMeasurement, escapeSvgAttribute, filterWeightEntriesByRange, normalizeWaistUnit, normalizeWeightEntries, waistInputRange, waistInputWithinBounds, waistToCanonicalCentimetres } from "./weight-tracker.js";
+import { LOOT_RARITIES, LOOT_SLOTS, createDefaultLootState, equippedLoot, lootGearScore, lootItem, normalizeLootState, rollLootDrop } from "./loot-system.js";
 
 const STORAGE_KEY = "next-chapter-state-v1";
 
@@ -224,6 +225,7 @@ const defaultState = {
   waistUnit: "cm",
   notificationPrefs: { enabled: false, leadMinutes: 30, lastAlerts: {} },
   hasPersonalised: false,
+  loot: createDefaultLootState(),
 };
 
 function loadState() {
@@ -245,6 +247,7 @@ function loadState() {
       weightEntries: normalizeWeightEntries(saved?.weightEntries),
       waistUnit: normalizeWaistUnit(saved?.waistUnit),
       notificationPrefs: { ...defaultState.notificationPrefs, ...saved?.notificationPrefs, lastAlerts: saved?.notificationPrefs?.lastAlerts || {} },
+      loot: normalizeLootState(saved?.loot),
     };
   } catch {
     return structuredClone(defaultState);
@@ -259,6 +262,7 @@ let selectedWeightRange = "3m";
 let pushApiBase = "";
 let pushSyncTimer;
 let editingMedicationId = null;
+let lootOpening = false;
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -273,6 +277,16 @@ function nextLevel(xp = state.xp) {
   return levels.find((item) => item.min > xp) || null;
 }
 
+function grantLootBoxesThroughLevel(levelNumber) {
+  const reachedLevel = Math.max(1, Math.floor(Number(levelNumber) || 1));
+  const rewardedLevel = Math.max(1, state.loot.rewardedThroughLevel);
+  const boxesEarned = Math.max(0, reachedLevel - rewardedLevel);
+  if (!boxesEarned) return 0;
+  state.loot.pendingBoxes += boxesEarned;
+  state.loot.rewardedThroughLevel = reachedLevel;
+  return boxesEarned;
+}
+
 function awardLifeXp(amount, title, detail, type) {
   if (!amount) return null;
   const previousLevel = currentLevel().level;
@@ -285,7 +299,9 @@ function awardLifeXp(amount, title, detail, type) {
     completedAt: new Date().toISOString(),
   });
   showToast(title, `+${amount} XP · ${detail}`);
-  return currentLevel().level > previousLevel ? currentLevel() : null;
+  const reachedLevel = currentLevel();
+  if (reachedLevel.level <= previousLevel) return null;
+  return { ...reachedLevel, lootBoxesEarned: grantLootBoxesThroughLevel(reachedLevel.level) };
 }
 
 function daysBetween(dateA, dateB) {
@@ -453,10 +469,11 @@ function toggleQuest(quest) {
     updateStreak(localDateKey());
     showToast("Quest complete", `+${quest.xp} XP · ${capabilityMeta[quest.track].label}`);
   }
+  const reachedLevel = currentLevel();
+  const lootBoxesEarned = !wasComplete && reachedLevel.level > wasLevel ? grantLootBoxesThroughLevel(reachedLevel.level) : 0;
   saveState();
   renderAll();
-  const newLevel = currentLevel().level;
-  if (!wasComplete && newLevel > wasLevel) showLevelUp(currentLevel());
+  if (!wasComplete && reachedLevel.level > wasLevel) showLevelUp({ ...reachedLevel, lootBoxesEarned });
 }
 
 function renderCapabilities() {
@@ -1321,6 +1338,111 @@ async function initialisePushBackend() {
   }
   renderReminderSettings();
 }
+
+function inventoryLoot(instanceId) {
+  const instance = state.loot.inventory.find((entry) => entry.instanceId === instanceId);
+  const item = instance ? lootItem(instance.itemId) : null;
+  return item ? { ...instance, ...item } : null;
+}
+
+function renderArmory() {
+  state.loot = normalizeLootState(state.loot);
+  const pending = state.loot.pendingBoxes;
+  const badge = document.querySelector("#loot-badge");
+  badge.hidden = pending === 0;
+  badge.textContent = pending > 9 ? "9+" : pending;
+  const armoryButton = document.querySelector("#armory-button");
+  armoryButton.classList.toggle("has-loot", pending > 0);
+  armoryButton.setAttribute("aria-label", pending ? `Open your armory. ${pending} ${pending === 1 ? "coffer" : "coffers"} waiting.` : "Open your armory");
+
+  const name = state.profile.name.trim() || "The Wayfarer";
+  const level = currentLevel();
+  document.querySelector("#character-name").textContent = name;
+  document.querySelector("#character-title").textContent = `Level ${level.level} · ${level.title}`;
+  document.querySelector("#gear-score").textContent = lootGearScore(state.loot);
+  document.querySelector("#coffer-count").textContent = pending;
+  const openButton = document.querySelector("#open-coffer");
+  openButton.disabled = pending === 0 || lootOpening;
+  openButton.querySelector("strong").textContent = lootOpening ? "The seals are breaking…" : pending ? "Open one coffer" : "No coffers waiting";
+  openButton.querySelector("small").textContent = pending ? "Reveal a random relic" : "Your next level earns one";
+
+  const equippedItems = LOOT_SLOTS.map((slot) => equippedLoot(state.loot, slot.id)).filter(Boolean);
+  const highestRank = equippedItems.reduce((highest, item) => Math.max(highest, LOOT_RARITIES[item.rarity].rank), 0);
+  const highestRarity = Object.entries(LOOT_RARITIES).find(([, meta]) => meta.rank === highestRank)?.[0] || "common";
+  const sheet = document.querySelector("#character-sheet");
+  sheet.dataset.aura = highestRarity;
+  sheet.setAttribute("aria-label", equippedItems.length ? `${name} equipped with ${equippedItems.map((item) => item.name).join(", ")}` : `${name} has no gear equipped yet`);
+  const emptyGlyphs = { head: "◇", body: "◇", weapon: "†", offhand: "◐", boots: "⌁", cloak: "≋" };
+  LOOT_SLOTS.forEach((slot) => {
+    const equipped = equippedLoot(state.loot, slot.id);
+    const piece = document.querySelector(`[data-character-piece="${slot.id}"]`);
+    piece.textContent = equipped?.glyph || emptyGlyphs[slot.id];
+    piece.className = `${piece.className.split(" ").slice(0, 2).join(" ")} ${equipped ? `rarity-${equipped.rarity}` : "empty"}`;
+    piece.title = equipped?.name || `${slot.label} slot empty`;
+  });
+
+  document.querySelector("#equipped-slots").innerHTML = LOOT_SLOTS.map((slot) => {
+    const equipped = equippedLoot(state.loot, slot.id);
+    return `<article class="equipped-slot ${equipped ? `rarity-${equipped.rarity}` : "empty"}"><span>${escapeHtml(slot.label)}</span><strong>${equipped ? escapeHtml(equipped.name) : "Empty"}</strong>${equipped ? `<button type="button" data-unequip-slot="${slot.id}" aria-label="Unequip ${escapeHtml(equipped.name)}">×</button>` : ""}</article>`;
+  }).join("");
+
+  const inventory = state.loot.inventory
+    .map((instance) => inventoryLoot(instance.instanceId))
+    .filter(Boolean)
+    .sort((left, right) => LOOT_RARITIES[right.rarity].rank - LOOT_RARITIES[left.rarity].rank || String(right.obtainedAt).localeCompare(String(left.obtainedAt)));
+  document.querySelector("#inventory-count").textContent = `${inventory.length} ${inventory.length === 1 ? "relic" : "relics"}`;
+  document.querySelector("#loot-inventory").innerHTML = inventory.length ? inventory.map((item) => {
+    const equipped = state.loot.equipped[item.slot] === item.instanceId;
+    const rarity = LOOT_RARITIES[item.rarity];
+    return `<article class="loot-card rarity-${item.rarity}" style="--rarity:${rarity.color}"><span class="loot-glyph" aria-hidden="true">${item.glyph}</span><div><small>${rarity.label} · ${LOOT_SLOTS.find((slot) => slot.id === item.slot)?.label}</small><h3>${escapeHtml(item.name)}</h3></div><button type="button" data-equip-loot="${escapeHtml(item.instanceId)}" ${equipped ? "disabled" : ""}>${equipped ? "Equipped" : "Equip"}</button></article>`;
+  }).join("") : `<div class="loot-empty"><span aria-hidden="true">♜</span><h3>Your ledger is blank.</h3><p>Reach Level 2 to earn your first coffer.</p></div>`;
+
+  const lastDrop = inventoryLoot(state.loot.lastDropInstanceId);
+  const reveal = document.querySelector("#loot-reveal");
+  reveal.className = `loot-reveal ${lastDrop ? `rarity-${lastDrop.rarity}` : ""}`;
+  document.querySelector("#loot-reveal-glyph").textContent = lastDrop?.glyph || "✦";
+  document.querySelector("#loot-reveal-rarity").textContent = lastDrop ? `${LOOT_RARITIES[lastDrop.rarity].label.toUpperCase()} RELIC` : "THE VAULT IS QUIET";
+  document.querySelector("#loot-reveal-name").textContent = lastDrop?.name || "Your next relic waits here.";
+  document.querySelector("#loot-reveal-slot").textContent = lastDrop ? `${LOOT_SLOTS.find((slot) => slot.id === lastDrop.slot)?.label} gear · ready to equip` : "Earn a level to receive a coffer.";
+
+  document.querySelectorAll("[data-equip-loot]").forEach((button) => button.addEventListener("click", () => {
+    const item = inventoryLoot(button.dataset.equipLoot);
+    if (!item) return;
+    state.loot.equipped[item.slot] = item.instanceId;
+    saveState();
+    renderArmory();
+    showToast("Relic equipped", `${item.name} now rests on your character.`);
+  }));
+  document.querySelectorAll("[data-unequip-slot]").forEach((button) => button.addEventListener("click", () => {
+    state.loot.equipped[button.dataset.unequipSlot] = "";
+    saveState();
+    renderArmory();
+  }));
+}
+
+function openLootCoffer() {
+  if (lootOpening || state.loot.pendingBoxes < 1) return;
+  lootOpening = true;
+  const room = document.querySelector(".chest-room");
+  room.classList.add("opening");
+  renderArmory();
+  const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 850;
+  window.setTimeout(() => {
+    const item = rollLootDrop();
+    const instance = { instanceId: makeId("relic"), itemId: item.id, obtainedAt: new Date().toISOString() };
+    state.loot.pendingBoxes -= 1;
+    state.loot.openedBoxes += 1;
+    state.loot.inventory.unshift(instance);
+    state.loot.lastDropInstanceId = instance.instanceId;
+    lootOpening = false;
+    saveState();
+    room.classList.remove("opening");
+    room.classList.add("drop-landed");
+    renderArmory();
+    window.setTimeout(() => room.classList.remove("drop-landed"), 1100);
+  }, delay);
+}
+
 function showToast(title, message, positive = true) {
   const toast = document.querySelector("#toast");
   document.querySelector("#toast-title").textContent = title;
@@ -1336,6 +1458,8 @@ function showLevelUp(level) {
   document.querySelector("#level-up-number").textContent = level.level;
   document.querySelector("#level-up-title").textContent = level.title;
   document.querySelector("#level-up-reward").textContent = `${level.reward} unlocked`;
+  const boxes = Math.max(1, Number(level.lootBoxesEarned) || 1);
+  document.querySelector("#level-up-loot").textContent = `${boxes === 1 ? "A sealed coffer was" : `${boxes} sealed coffers were`} sent to your armory.`;
   overlay.setAttribute("aria-hidden", "false");
   overlay.classList.add("show");
   setTimeout(() => {
@@ -1360,6 +1484,7 @@ function renderAll() {
   renderMedications();
   renderLifeSnapshot();
   renderReminderSettings();
+  renderArmory();
 }
 
 function switchView(viewName) {
@@ -1367,7 +1492,7 @@ function switchView(viewName) {
   document.querySelectorAll(".view").forEach((view) => view.classList.remove("active"));
   document.querySelectorAll(".nav-link").forEach((link) => link.classList.remove("active"));
   document.querySelector(`#${viewName}-view`).classList.add("active");
-  document.querySelector(`[data-view="${viewName}"]`).classList.add("active");
+  document.querySelector(`[data-view="${viewName}"]`)?.classList.add("active");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -1384,6 +1509,13 @@ document.querySelector("#streak-button").addEventListener("click", () => {
     document.querySelector(".quest-card:not(.complete) .complete-button")?.focus({ preventScroll: true });
   }, 250);
 });
+
+document.querySelector("#armory-button").addEventListener("click", () => {
+  if (location.hash !== "#armory") history.pushState(null, "", "#armory");
+  switchView("armory");
+});
+
+document.querySelector("#open-coffer").addEventListener("click", openLootCoffer);
 
 document.querySelectorAll(".nav-link").forEach((link) => {
   link.addEventListener("click", () => {
@@ -1783,12 +1915,14 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./service-worker.js").catch(() => {});
 }
 
+const restoredLootBoxes = grantLootBoxesThroughLevel(currentLevel().level);
+if (restoredLootBoxes) saveState();
 renderAll();
 initialisePushBackend();
 
 const initialView = location.hash.slice(1);
-if (["today", "todos", "library", "meds", "weight", "growth"].includes(initialView)) switchView(initialView);
+if (["today", "todos", "library", "meds", "weight", "growth", "armory"].includes(initialView)) switchView(initialView);
 window.addEventListener("hashchange", () => {
   const view = location.hash.slice(1);
-  if (["today", "todos", "library", "meds", "weight", "growth"].includes(view)) switchView(view);
+  if (["today", "todos", "library", "meds", "weight", "growth", "armory"].includes(view)) switchView(view);
 });

@@ -24,6 +24,35 @@ test("life actions award XP and header controls have useful destinations", async
   assert.match(app, /function awardBookProgress/);
 });
 
+test("level ups grant sealed coffers for an outfit-able character", async () => {
+  const [html, app, loot, css, worker, packageJson] = await Promise.all([
+    readFile(new URL("../index.html", import.meta.url), "utf8"),
+    readFile(new URL("../app.js", import.meta.url), "utf8"),
+    readFile(new URL("../loot-system.js", import.meta.url), "utf8"),
+    readFile(new URL("../armory.css", import.meta.url), "utf8"),
+    readFile(new URL("../service-worker.js", import.meta.url), "utf8"),
+    readFile(new URL("../package.json", import.meta.url), "utf8"),
+  ]);
+  assert.match(html, /id="armory-button"/);
+  assert.match(html, /id="armory-view"/);
+  assert.match(html, /id="open-coffer"/);
+  assert.match(html, /data-character-piece="head"/);
+  assert.match(html, /id="loot-inventory"/);
+  assert.match(app, /function grantLootBoxesThroughLevel/);
+  assert.match(app, /rewardedThroughLevel/);
+  assert.match(app, /lootBoxesEarned: grantLootBoxesThroughLevel/);
+  assert.match(app, /rollLootDrop\(\)/);
+  assert.match(app, /state\.loot\.equipped\[item\.slot\] = item\.instanceId/);
+  assert.match(app, /renderArmory\(\)/);
+  assert.match(loot, /if \(roll < 0\.6\) return "common"/);
+  assert.match(loot, /if \(roll < 0\.99\) return "epic"/);
+  assert.match(loot, /return "legendary"/);
+  assert.match(css, /\.character-sheet/);
+  assert.match(css, /@keyframes cofferLid/);
+  assert.match(worker, /loot-system\.js/);
+  assert.match(JSON.parse(packageJson).scripts.check, /loot-system\.js/);
+});
+
 test("Azure Static Web Apps configuration has a navigation fallback", async () => {
   const config = JSON.parse(
     await readFile(new URL("../staticwebapp.config.json", import.meta.url), "utf8"),
