@@ -317,8 +317,7 @@
             </div>
             <fieldset class="course-fields"><legend>Course timing <span>(leave duration empty for ongoing)</span></legend><div class="schedule-fields"><label for="med-course-start">Course start<input id="med-course-start" type="date" /></label><label for="med-duration">Duration<input id="med-duration" type="number" min="1" step="1" value="4" /></label><label for="med-duration-unit">Duration unit<select id="med-duration-unit"><option value="weeks">weeks</option><option value="days">days</option></select></label></div><p class="course-end">Course end <output id="med-course-end" aria-live="polite">Ongoing</output></p></fieldset>
             <fieldset class="dose-fields"><legend>Amount in each dose <span>(optional)</span></legend><label>Amount<input id="med-dosage" type="number" min="0.01" step="any" placeholder="e.g. 20" /></label><label>Medicine unit<select id="med-dose-unit"><option value="mg">mg</option><option value="mcg">mcg</option><option value="IU">IU</option><option value="g">g</option><option value="mL">mL</option><option value="tablet">tablet(s)</option><option value="capsule">capsule(s)</option><option value="drop">drop(s)</option><option value="puff">puff(s)</option><option value="unit">unit(s)</option></select></label></fieldset>
-            <label>Last taken <span>(optional)</span><input id="med-last-taken" type="datetime-local" /></label>
-            <p class="form-hint">Use the timing provided by your clinician or medication label.</p>
+            <p class="form-hint">Use the timing provided by your clinician or medication label. Schedule changes apply to future reminders.</p>
             <div class="med-form-actions"><button class="primary-button" id="med-form-submit" type="submit">Add medication <span>+10 XP</span></button><button class="secondary-button" id="cancel-med-edit" type="button" hidden>Cancel edit</button></div>
           </form>
         </div>
@@ -455,6 +454,17 @@
         <div class="insight-grid" id="insight-grid"></div>
       </section>
     </main>
+
+    <dialog class="info-dialog" id="dose-correction-dialog">
+      <form class="dialog-shell small" id="dose-correction-form">
+        <button class="dialog-close" type="button" id="close-dose-correction" aria-label="Close dose correction">×</button>
+        <p class="eyebrow">DOSE HISTORY</p>
+        <h2>Correct latest dose time</h2>
+        <p id="dose-correction-copy">This updates the latest history entry and the next reminder time together.</p>
+        <label for="corrected-dose-time">Taken at<input id="corrected-dose-time" type="datetime-local" required /></label>
+        <div class="med-form-actions"><button class="primary-button" type="submit">Save corrected time</button><button class="secondary-button" type="button" id="cancel-dose-correction">Cancel</button></div>
+      </form>
+    </dialog>
 
     <dialog class="profile-dialog" id="profile-dialog">
       <form method="dialog" class="dialog-shell" id="profile-form">

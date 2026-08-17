@@ -262,6 +262,7 @@ let selectedWeightRange = "3m";
 let pushApiBase = "";
 let pushSyncTimer;
 let editingMedicationId = null;
+let correctingMedicationId = null;
 let lootOpening = false;
 
 function saveState() {
@@ -1067,11 +1068,20 @@ function renderMedications() {
     const status = timing.status === "upcoming" ? "UPCOMING" : timing.status === "complete" ? "COURSE COMPLETE" : timing.due ? "NEEDS ATTENTION" : "ON SCHEDULE";
     const schedule = medication.scheduleType === "interval" ? `Every ${escapeHtml(medication.interval)} ${escapeHtml(medication.unit)}` : escapeHtml(medicationScheduleLabel(medication));
     const dose = medicationDoseLabel(medication);
-    return `<article class="med-card ${timing.due ? "due" : ""} ${timing.recentlyTaken ? "just-taken" : ""} ${timing.status}"><div class="med-status-mark" aria-hidden="true">${timing.due ? "!" : timing.status === "upcoming" ? "→" : "✓"}</div><div class="med-copy"><p>${status}</p><h2>${escapeHtml(medication.name)}</h2>${dose ? `<span class="med-dose">${escapeHtml(dose)}</span>` : ""}<strong>${escapeHtml(timing.label)}</strong><span>${escapeHtml(timing.detail)}</span></div><div class="med-schedule"><span>${schedule}</span><small>${escapeHtml(medicationCourseRange(medication))}</small>${medication.phase ? `<small>${escapeHtml(medication.phase)}</small>` : ""}</div>${timing.status === "active" && !timing.recentlyTaken ? `<button class="primary-button take-med" data-med-take="${escapeHtml(medication.id)}">Taken now <span>+5 XP</span></button>` : timing.recentlyTaken ? `<span class="med-logged" aria-live="polite">✓ Logged</span>` : ""}<button class="secondary-button med-edit" data-med-edit="${escapeHtml(medication.id)}" aria-label="Edit ${escapeHtml(medication.name)}">Edit dose</button><button class="row-delete med-delete" data-med-delete="${escapeHtml(medication.id)}" aria-label="Remove ${escapeHtml(medication.name)}">×</button></article>`;
+    return `<article class="med-card ${timing.due ? "due" : ""} ${timing.recentlyTaken ? "just-taken" : ""} ${timing.status}"><div class="med-status-mark" aria-hidden="true">${timing.due ? "!" : timing.status === "upcoming" ? "→" : "✓"}</div><div class="med-copy"><p>${status}</p><h2>${escapeHtml(medication.name)}</h2>${dose ? `<span class="med-dose">${escapeHtml(dose)}</span>` : ""}<strong>${escapeHtml(timing.label)}</strong><span>${escapeHtml(timing.detail)}</span></div><div class="med-schedule"><span>${schedule}</span><small>${escapeHtml(medicationCourseRange(medication))}</small>${medication.phase ? `<small>${escapeHtml(medication.phase)}</small>` : ""}</div>${timing.status === "active" && !timing.recentlyTaken ? `<button class="primary-button take-med" data-med-take="${escapeHtml(medication.id)}">Taken now <span>+5 XP</span></button>` : timing.recentlyTaken ? `<span class="med-logged" aria-live="polite">✓ Logged</span>` : ""}${medication.lastTaken ? `<button class="text-action med-correct-dose" data-med-correct="${escapeHtml(medication.id)}" aria-label="Correct latest dose time for ${escapeHtml(medication.name)}">Correct latest dose time</button>` : ""}<button class="secondary-button med-edit" data-med-edit="${escapeHtml(medication.id)}" aria-label="Edit medication and schedule for ${escapeHtml(medication.name)}">Edit medication & schedule</button><button class="row-delete med-delete" data-med-delete="${escapeHtml(medication.id)}" aria-label="Remove ${escapeHtml(medication.name)}">×</button></article>`;
   }).join("") : `<div class="admin-empty med-empty"><span>✚</span><h3>No medications added.</h3><p>Add one with the interval you have been instructed to follow.</p></div>`;
   document.querySelectorAll("[data-med-take]").forEach((button) => button.addEventListener("click", () => { const medication = state.medications.find((item) => item.id === button.dataset.medTake); if (!medication || medicationCourseStatus(medication) !== "active") return; medication.lastTaken = new Date().toISOString(); state.medLog.unshift({ id: makeId("dose"), medicationId: medication.id, name: medication.name, takenAt: medication.lastTaken }); const levelUp = awardLifeXp(5, "Dose logged", `${medication.name} marked as taken`, "medication-dose"); saveState(); renderAll(); if (levelUp) showLevelUp(levelUp); }));
   document.querySelectorAll("[data-med-edit]").forEach((button) => button.addEventListener("click", () => startMedicationEdit(button.dataset.medEdit)));
-  document.querySelectorAll("[data-med-delete]").forEach((button) => button.addEventListener("click", () => { if (editingMedicationId === button.dataset.medDelete) resetMedicationForm(); state.medications = state.medications.filter((medication) => medication.id !== button.dataset.medDelete); saveState(); renderMedications(); renderLifeSnapshot(); }));
+  document.querySelectorAll("[data-med-correct]").forEach((button) => button.addEventListener("click", () => startDoseCorrection(button.dataset.medCorrect)));
+  document.querySelectorAll("[data-med-delete]").forEach((button) => button.addEventListener("click", () => {
+    const medication = state.medications.find((item) => item.id === button.dataset.medDelete);
+    if (!medication || !window.confirm(`Remove ${medication.name} from the tracker? Logged dose history will be kept.`)) return;
+    if (editingMedicationId === medication.id) resetMedicationForm();
+    state.medications = state.medications.filter((item) => item.id !== medication.id);
+    saveState();
+    renderMedications();
+    renderLifeSnapshot();
+  }));
 }
 function renderLifeSnapshot() {
   const todos = state.todosByDate[localDateKey()] || [];
@@ -1704,11 +1714,21 @@ function medicationLastTakenInputValue(value) {
   return `${date.getFullYear()}-${part(date.getMonth() + 1)}-${part(date.getDate())}T${part(date.getHours())}:${part(date.getMinutes())}`;
 }
 
+function startDoseCorrection(medicationId) {
+  const medication = state.medications.find((item) => item.id === medicationId);
+  if (!medication?.lastTaken) return;
+  correctingMedicationId = medication.id;
+  document.querySelector("#dose-correction-copy").textContent = `Correct the latest logged time for ${medication.name}. This updates dose history and future reminders together.`;
+  document.querySelector("#corrected-dose-time").value = medicationLastTakenInputValue(medication.lastTaken);
+  document.querySelector("#dose-correction-dialog").showModal();
+  document.querySelector("#corrected-dose-time").focus();
+}
+
 function setMedicationFormMode(medication = null) {
   editingMedicationId = medication?.id || null;
   document.querySelector("#med-form-mode").textContent = medication ? "EDIT MEDICATION" : "ADD A MEDICATION";
   document.querySelector("#med-form-title").textContent = medication ? `Edit ${medication.name}` : "Set your rhythm";
-  document.querySelector("#med-form-status").textContent = medication ? "Changes save to this medication without changing its dose history." : "";
+  document.querySelector("#med-form-status").textContent = medication ? "Schedule changes apply to future reminders. Logged dose history is unchanged." : "";
   document.querySelector("#med-form-submit").innerHTML = medication ? "Save changes" : "Add medication <span>+10 XP</span>";
   document.querySelector("#cancel-med-edit").hidden = !medication;
 }
@@ -1761,7 +1781,6 @@ function startMedicationEdit(medicationId) {
   document.querySelector("#med-duration-unit").value = medication.durationUnit || "weeks";
   document.querySelector("#med-dosage").value = medication.dosage ?? "";
   document.querySelector("#med-dose-unit").value = medication.dosageUnit || "mg";
-  document.querySelector("#med-last-taken").value = medicationLastTakenInputValue(medication.lastTaken);
   setMedicationFormMode(medication);
   updateMedicationCoursePreview();
   updateMedicationScheduleFields();
@@ -1801,7 +1820,7 @@ document.querySelector("#med-form").addEventListener("submit", (event) => {
     courseEndDate,
     duration,
     durationUnit,
-    lastTaken: document.querySelector("#med-last-taken").value ? new Date(document.querySelector("#med-last-taken").value).toISOString() : null,
+    lastTaken: existing?.lastTaken || null,
     createdAt: existing?.createdAt || new Date().toISOString(),
   };
   delete medication.interval;
@@ -1842,6 +1861,30 @@ document.querySelector("#med-form").addEventListener("submit", (event) => {
 });
 
 document.querySelector("#cancel-med-edit").addEventListener("click", resetMedicationForm);
+const doseCorrectionDialog = document.querySelector("#dose-correction-dialog");
+function closeDoseCorrection() {
+  correctingMedicationId = null;
+  doseCorrectionDialog.close();
+}
+document.querySelector("#close-dose-correction").addEventListener("click", closeDoseCorrection);
+document.querySelector("#cancel-dose-correction").addEventListener("click", closeDoseCorrection);
+document.querySelector("#dose-correction-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const medication = state.medications.find((item) => item.id === correctingMedicationId);
+  const input = document.querySelector("#corrected-dose-time").value;
+  const correctedAt = input ? new Date(input).toISOString() : "";
+  if (!medication || !correctedAt) return;
+  medication.lastTaken = correctedAt;
+  const latestLog = state.medLog
+    .filter((entry) => entry.medicationId === medication.id)
+    .sort((left, right) => new Date(right.takenAt).getTime() - new Date(left.takenAt).getTime())[0];
+  if (latestLog) latestLog.takenAt = correctedAt;
+  else state.medLog.unshift({ id: makeId("dose"), medicationId: medication.id, name: medication.name, takenAt: correctedAt, corrected: true });
+  saveState();
+  closeDoseCorrection();
+  renderAll();
+  showToast("Dose time corrected", `${medication.name} history and reminders now use the corrected time.`, false);
+});
 document.querySelector("#med-course-start").addEventListener("change", updateMedicationCoursePreview);
 document.querySelector("#med-duration").addEventListener("input", updateMedicationCoursePreview);
 document.querySelector("#med-duration-unit").addEventListener("change", updateMedicationCoursePreview);

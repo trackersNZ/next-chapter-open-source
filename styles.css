@@ -13,6 +13,8 @@
   --body: "DM Sans", "Segoe UI", sans-serif;
 }
 
+[hidden] { display: none !important; }
+
 * {
   box-sizing: border-box;
 }
@@ -1804,6 +1806,7 @@ select { width: 100%; padding: .82rem .6rem; border: 0; border-bottom: 1px solid
 .take-med { grid-column: 2; justify-self: start; }
 .med-delete { position: absolute; top: .4rem; right: .4rem; }
 .med-edit { position: absolute; top: .5rem; right: 2.7rem; padding: .42rem .65rem; font-size: .58rem; }
+.med-correct-dose { grid-column: 2; justify-self: start; padding: .2rem 0; font-size: .56rem; }
 .med-form { position: sticky; top: 24px; display: grid; gap: 1rem; padding: 1.5rem; }
 .med-form-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .65rem; }
 .med-form-status:empty { display: none; }
